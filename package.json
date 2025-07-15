@@ -1,6 +1,6 @@
 {
-  "name": "@everstake/wallet-sdk",
-  "version": "1.0.18",
+  "name": "@temple-wallet/everstake-wallet-sdk",
+  "version": "2.0.0",
   "description": "Everstake Wallet SDK for Javascript",
   "publishConfig": {
     "access": "public"
@@ -16,19 +16,16 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "pnpm run prebuild && tsup src/index.ts --format cjs,esm --dts",
+    "build": "yarn run prebuild && tsup src/index.ts --format cjs,esm --dts",
     "type-check": "tsc",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "prettier": "prettier --write 'src/**/*.{ts,tsx}'",
-    "test": "jest",
-    "prebuild": "pnpm run type-check && pnpm run lint && pnpm run test"
+    "test": "jest --passWithNoTests",
+    "prebuild": "yarn run type-check && yarn run lint && yarn run test"
   },
   "keywords": [
     "ethereum",
-    "aptos",
     "polygon",
-    "cosmos",
-    "solana",
     "blockchain",
     "everstake",
     "wallet sdk"
@@ -44,27 +41,9 @@
   },
   "homepage": "https://github.com/everstake/wallet-sdk#readme",
   "dependencies": {
-    "@solana/web3.js": "1.98.2",
-    "bignumber.js": "^9.3.0",
-    "ethereum-multicall": "^2.26.0",
+    "bignumber.js": "^9.1.2",
     "superstruct": "2.0.2",
-    "web3": "4.16.0"
-  },
-  "overrides": {
-    "ws": "^8.0.0",
-    "elliptic": "6.6.1",
-    "base-x": "3.0.11"
-  },
-  "pnpm": {
-    "overrides": {
-      "ws": "^8.0.0",
-      "elliptic": "6.6.1",
-      "base-x": "3.0.11"
-    }
-  },
-  "resolutions": {
-    "elliptic": "6.6.1",
-    "base-x": "3.0.11"
+    "viem": "^2.30.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.7.0",

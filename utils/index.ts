@@ -62,7 +62,7 @@ export abstract class Blockchain {
   public handleError(
     code: keyof typeof this.ERROR_MESSAGES,
     originalError: Error | WalletSDKError | unknown,
-  ) {
+  ): never {
     const message = this.ERROR_MESSAGES[code];
 
     // If originalError is an instance of WalletSDKError, or if message or code is not defined,
@@ -104,7 +104,7 @@ export abstract class Blockchain {
   public throwError(
     code: keyof typeof this.ERROR_MESSAGES,
     ...values: string[]
-  ) {
+  ): never {
     let message = this.ERROR_MESSAGES[code];
     values.forEach((value, index) => {
       message = message?.replace(`{${index}}`, value);

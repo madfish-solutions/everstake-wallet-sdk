@@ -226,7 +226,7 @@ export const ABI_CONTRACT_APPROVE = [
     name: 'Approval',
     type: 'event',
   },
-];
+] as const;
 
 export const ABI_CONTRACT_STAKING = [
   {
@@ -238,7 +238,7 @@ export const ABI_CONTRACT_STAKING = [
     stateMutability: 'view',
     type: 'function',
   },
-];
+] as const;
 
 export const ABI_CONTRACT_BUY = [
   {
@@ -977,4 +977,4 @@ export const ABI_CONTRACT_BUY = [
     stateMutability: 'view',
     type: 'function',
   },
-];
+] as const;

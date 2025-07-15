@@ -3,12 +3,16 @@
  * Licensed under the BSD-3-Clause License. See LICENSE file for details.
  */
 
+import BigNumber from 'bignumber.js';
+
+export type HexString = `0x${string}`;
+
 export type EthNetworkType = 'mainnet' | 'holesky';
 
 export interface EthNetworkAddresses {
-  addressContractAccounting: string;
-  addressContractPool: string;
-  addressContractWithdrawTreasury: string;
+  addressContractAccounting: HexString;
+  addressContractPool: HexString;
+  addressContractWithdrawTreasury: HexString;
   rpcUrl: string;
 }
 
@@ -19,7 +23,7 @@ export type EthNetworkAddressesMap = {
 export type EthTransaction = {
   from: string;
   to: string;
-  value: number;
+  value: BigNumber;
   gasLimit: number;
   data: string;
 };

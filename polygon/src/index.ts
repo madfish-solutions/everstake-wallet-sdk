@@ -3,11 +3,22 @@
  * Licensed under the BSD-3-Clause License. See LICENSE file for details.
  */
 
+import {
+  Abi,
+  createPublicClient,
+  encodeFunctionData,
+  FallbackTransport,
+  formatUnits,
+  http,
+  HttpTransport,
+  parseUnits,
+  PublicClient,
+  TransactionReceiptNotFoundError,
+} from 'viem';
+
 import { Blockchain } from '../../utils';
 import { CheckToken, SetStats } from '../../utils/api';
 import { COMMON_ERROR_MESSAGES } from '../../utils/constants/errors';
-
-import Web3, { Contract, HttpProvider, Numbers } from 'web3';
 
 import { ERROR_MESSAGES, ORIGINAL_ERROR_MESSAGES } from './constants/errors';
 import {
@@ -31,7 +42,14 @@ import {
   WITHDRAW_EPOCH_DELAY,
 } from './constants';
 import BigNumber from 'bignumber.js';
-import { TransactionRequest, UnbondInfo } from './types';
+import { HexString, TransactionRequest, UnbondInfo } from './types';
+
+interface ContractProps<T extends Abi> {
+  abi: T;
+  address: HexString;
+}
+
+type Numbers = number | bigint | string;
 
 /**
  * The `Polygon` class extends the `Blockchain` class and provides methods for interacting with the Polygon network.
@@ -53,71 +71,84 @@ import { TransactionRequest, UnbondInfo } from './types';
  */
 
 export class Polygon extends Blockchain {
-  public contract_approve!: Contract<typeof ABI_CONTRACT_APPROVE>;
-  public contract_approve_pol!: Contract<typeof ABI_CONTRACT_APPROVE>;
-  public contract_buy: Contract<typeof ABI_CONTRACT_BUY>;
-  public contract_staking: Contract<typeof ABI_CONTRACT_BUY>;
+  public contract_approve: ContractProps<typeof ABI_CONTRACT_APPROVE>;
+  public contract_approve_pol: ContractProps<typeof ABI_CONTRACT_APPROVE>;
+  public contract_buy: ContractProps<typeof ABI_CONTRACT_BUY>;
+  public contract_staking: ContractProps<typeof ABI_CONTRACT_STAKING>;
 
-  private web3!: Web3;
-
+  private client: PublicClient;
   protected ERROR_MESSAGES = ERROR_MESSAGES;
   protected ORIGINAL_ERROR_MESSAGES = ORIGINAL_ERROR_MESSAGES;
 
-  constructor(rpc: string = RPC_URL) {
+  constructor(
+    rpcOrTransport: string | HttpTransport | FallbackTransport = RPC_URL,
+  ) {
     super();
-    const httpProvider = new HttpProvider(rpc);
-    this.web3 = new Web3(httpProvider);
-    this.contract_approve = new this.web3.eth.Contract(
-      ABI_CONTRACT_APPROVE,
-      ADDRESS_CONTRACT_APPROVE,
-    );
-    this.contract_approve_pol = new this.web3.eth.Contract(
-      ABI_CONTRACT_APPROVE,
-      ADDRESS_CONTRACT_APPROVE_POL,
-    );
-    this.contract_buy = new this.web3.eth.Contract(
-      ABI_CONTRACT_BUY,
-      ADDRESS_CONTRACT_BUY,
-    );
-    this.contract_staking = new this.web3.eth.Contract(
-      ABI_CONTRACT_STAKING,
-      ADDRESS_CONTRACT_STAKING,
-    );
+    this.client = createPublicClient({
+      transport:
+        typeof rpcOrTransport === 'string'
+          ? http(rpcOrTransport, {
+              /** Defaults to 3 */
+              retryCount: 1,
+              /** Defaults to 150 */
+              retryDelay: 300,
+            })
+          : rpcOrTransport,
+    });
+    this.contract_approve = {
+      abi: ABI_CONTRACT_APPROVE,
+      address: ADDRESS_CONTRACT_APPROVE,
+    };
+    this.contract_approve_pol = {
+      abi: ABI_CONTRACT_APPROVE,
+      address: ADDRESS_CONTRACT_APPROVE_POL,
+    };
+    this.contract_buy = {
+      abi: ABI_CONTRACT_BUY,
+      address: ADDRESS_CONTRACT_BUY,
+    };
+    this.contract_staking = {
+      abi: ABI_CONTRACT_STAKING,
+      address: ADDRESS_CONTRACT_STAKING,
+    };
   }
 
   /**
    * Checks if a transaction is still pending or has been confirmed.
    *
-   * @param {string} hash - The transaction hash to check.
+   * @param {HexString} hash - The transaction hash to check.
    * @returns {Promise<{ result: boolean }>}
    *
    * @throws {Error} Throws an error with code `'TRANSACTION_LOADING_ERR'` if an issue occurs while fetching the transaction status.
    *
    */
   public async isTransactionLoading(
-    hash: string,
+    hash: HexString,
   ): Promise<{ result: boolean }> {
     try {
-      const result = await this.web3.eth.getTransactionReceipt(hash);
-      if (result && result.status) {
-        return { result: false };
-      } else {
-        await this.isTransactionLoading(hash);
+      try {
+        await this.client.getTransactionReceipt({ hash });
 
-        return { result: true };
+        return { result: false };
+      } catch (e) {
+        if (e instanceof TransactionReceiptNotFoundError) {
+          return { result: true };
+        }
+
+        throw e;
       }
     } catch (error) {
       throw this.handleError('TRANSACTION_LOADING_ERR', error);
     }
   }
   /** approve returns TX loading status
-   * @param {string} address - user's address
+   * @param {HexString} address - user's address
    * @param {string} amount - amount for approve
    * @param {boolean} isPOL - is POL token (false - old MATIC)
    * @returns {Promise<Object>} Promise object the result of boolean type
    */
   public async approve(
-    address: string,
+    address: HexString,
     amount: string,
     isPOL = false,
   ): Promise<
@@ -129,31 +160,26 @@ export class Polygon extends Blockchain {
       }
     | undefined
   > {
-    const amountWei = await this.web3.utils.toWei(amount.toString(), 'ether');
+    const amountWei = parseUnits(amount, 18);
 
     if (new BigNumber(amountWei).isLessThan(MIN_AMOUNT)) {
       throw new Error(
-        `Min Amount ${this.web3.utils.fromWei(MIN_AMOUNT.toString(), 'ether').toString()} matic`,
+        `Min Amount ${formatUnits(BigInt(MIN_AMOUNT.toString()), 18)} matic`,
       );
     }
 
     const contract = isPOL ? this.contract_approve_pol : this.contract_approve;
-    if (!contract?.methods?.approve) return;
 
     try {
-      const gasEstimate = await contract.methods
-        .approve(ADDRESS_CONTRACT_STAKING, amountWei)
-        .estimateGas({ from: address });
-
-      // Create the transaction
-      return {
-        from: address,
-        to: contract.options.address,
-        gasLimit: gasEstimate,
-        data: contract.methods
-          .approve(ADDRESS_CONTRACT_STAKING, amountWei)
-          .encodeABI(),
-      };
+      return await this.getTransaction(
+        encodeFunctionData({
+          abi: contract.abi,
+          functionName: 'approve',
+          args: [ADDRESS_CONTRACT_STAKING, amountWei],
+        }),
+        address,
+        contract.address,
+      );
     } catch (error) {
       throw this.handleError('APPROVE_ERR', error);
     }
@@ -161,19 +187,19 @@ export class Polygon extends Blockchain {
 
   /** delegate makes unsigned delegation TX
    * @param {string} token - auth token
-   * @param {string} address - user's address
+   * @param {HexString} address - user's address
    * @param {string} amount - amount for approve
    * @param {boolean} isPOL - is POL token (false - old MATIC)
    * @returns {Promise<Object>} Promise object represents the unsigned TX object
    */
   public async delegate(
     token: string,
-    address: string,
+    address: HexString,
     amount: string,
     isPOL = false,
   ): Promise<TransactionRequest | undefined> {
     if (await CheckToken(token)) {
-      const amountWei = await this.web3.utils.toWei(amount.toString(), 'ether');
+      const amountWei = parseUnits(amount, 18);
       if (new BigNumber(amountWei).isLessThan(MIN_AMOUNT))
         throw new Error(`Min Amount ${MIN_AMOUNT} wei matic`);
 
@@ -186,19 +212,18 @@ export class Polygon extends Blockchain {
           this.throwError('ALLOWANCE_ERR');
         }
 
-        const methods = this.contract_buy?.methods;
-
-        if (!methods?.buyVoucherPOL || !methods?.buyVoucher) return;
-        const method = isPOL
-          ? methods.buyVoucherPOL(amountWei, 0)
-          : methods.buyVoucher(amountWei, 0);
+        const data = encodeFunctionData({
+          abi: this.contract_buy.abi,
+          functionName: isPOL ? 'buyVoucherPOL' : 'buyVoucher',
+          args: [amountWei, 0n],
+        });
 
         // Create the transaction
         const tx = {
           from: address,
           to: ADDRESS_CONTRACT_BUY,
           gasLimit: DELEGATE_BASE_GAS,
-          data: method.encodeABI(),
+          data,
         };
 
         await SetStats({
@@ -220,23 +245,20 @@ export class Polygon extends Blockchain {
   }
   /** undelegate makes unsigned undelegate TX
    * @param {string} token - auth token
-   * @param {string} address - user's address
+   * @param {HexString} address - user's address
    * @param {string} amount - amount for approve
    * @param {boolean} isPOL - is POL token (false - old MATIC)
    * @returns {Promise<Object>} Promise object represents the unsigned TX object
    */
   public async undelegate(
     token: string,
-    address: string,
+    address: HexString,
     amount: string,
     isPOL = false,
   ): Promise<TransactionRequest | undefined> {
     if (await CheckToken(token)) {
       try {
-        const amountWei = await this.web3.utils.toWei(
-          amount.toString(),
-          'ether',
-        );
+        const amountWei = parseUnits(amount, 18);
         const delegatedBalance = await this.getTotalDelegate(address);
 
         if (
@@ -246,19 +268,18 @@ export class Polygon extends Blockchain {
           this.throwError('DELEGATED_BALANCE_ERR');
         }
 
-        const methods = this.contract_buy.methods;
-
-        if (!methods.sellVoucher_newPOL || !methods.sellVoucher_new) return;
-        const method = isPOL
-          ? methods.sellVoucher_newPOL(amountWei, amountWei)
-          : methods.sellVoucher_new(amountWei, amountWei);
+        const data = encodeFunctionData({
+          abi: this.contract_buy.abi,
+          functionName: isPOL ? 'sellVoucher_newPOL' : 'sellVoucher_new',
+          args: [amountWei, amountWei],
+        });
 
         // Create the transaction
         const tx = {
           from: address,
           to: ADDRESS_CONTRACT_BUY,
           gasLimit: UNDELEGATE_BASE_GAS,
-          data: method.encodeABI(),
+          data,
         };
 
         await SetStats({
@@ -279,13 +300,13 @@ export class Polygon extends Blockchain {
   }
 
   /** claimUndelegate makes unsigned claim undelegate TX
-   * @param {string} address - user's address
+   * @param {HexString} address - user's address
    * @param {bigint} unbondNonce - unbound nonce
    * @param {boolean} isPOL - is POL token (false - old MATIC)
    * @returns {Promise<Object>} Promise object represents the unsigned TX object
    */
   public async claimUndelegate(
-    address: string,
+    address: HexString,
     unbondNonce = 0n,
     isPOL = false,
   ): Promise<TransactionRequest | undefined> {
@@ -307,20 +328,19 @@ export class Polygon extends Blockchain {
       throw new Error(`Current epoch less than withdraw delay`);
     }
 
-    const methods = this.contract_buy.methods;
-
-    if (!methods.unstakeClaimTokens_newPOL || !methods.unstakeClaimTokens_new)
-      return;
-
-    const method = isPOL
-      ? methods.unstakeClaimTokens_newPOL(unbond.unbondNonces)
-      : methods.unstakeClaimTokens_new(unbond.unbondNonces);
+    const data = encodeFunctionData({
+      abi: this.contract_buy.abi,
+      functionName: isPOL
+        ? 'unstakeClaimTokens_newPOL'
+        : 'unstakeClaimTokens_new',
+      args: [unbond.unbondNonces],
+    });
 
     return {
       from: address,
       to: ADDRESS_CONTRACT_BUY,
       gasLimit: CLAIM_UNDELEGATE_BASE_GAS,
-      data: method.encodeABI(),
+      data,
     };
   }
 
@@ -333,19 +353,18 @@ export class Polygon extends Blockchain {
     address: string,
     isPOL = false,
   ): Promise<TransactionRequest | undefined> {
-    const methods = this.contract_buy.methods;
-    if (!methods.withdrawRewardsPOL || !methods.withdrawRewards) return;
-
-    const method = isPOL
-      ? methods.withdrawRewardsPOL()
-      : methods.withdrawRewards();
+    const data = encodeFunctionData({
+      abi: this.contract_buy.abi,
+      functionName: isPOL ? 'withdrawRewardsPOL' : 'withdrawRewards',
+      args: [],
+    });
 
     // Create the transaction
     return {
       from: address,
       to: ADDRESS_CONTRACT_BUY,
       gasLimit: CLAIM_REWARDS_BASE_GAS,
-      data: method.encodeABI(),
+      data,
     };
   }
 
@@ -358,33 +377,36 @@ export class Polygon extends Blockchain {
     address: string,
     isPOL = false,
   ): Promise<TransactionRequest | undefined> {
-    const methods = this.contract_buy.methods;
-    if (!methods.restakePOL || !methods.restake) return;
-
-    const method = isPOL ? methods.restakePOL() : methods.restake();
+    const data = encodeFunctionData({
+      abi: this.contract_buy.abi,
+      functionName: isPOL ? 'restakePOL' : 'restake',
+      args: [],
+    });
 
     // Create the transaction
     return {
       from: address,
       to: ADDRESS_CONTRACT_BUY,
       gasLimit: RESTAKE_BASE_GAS,
-      data: method.encodeABI(),
+      data,
     };
   }
 
   /** getReward returns reward number
-   * @param {string} address - user's address
+   * @param {HexString} address - user's address
    * @returns {Promise<BigNumber>} Promise with number of the reward
    */
-  public async getReward(address: string): Promise<BigNumber | undefined> {
+  public async getReward(address: HexString): Promise<BigNumber | undefined> {
     try {
-      const methods = this.contract_buy.methods;
-      if (!methods.getLiquidRewards) return;
-
-      const result = await methods.getLiquidRewards(address).call();
+      const result = await this.client.readContract({
+        address: this.contract_buy.address,
+        abi: this.contract_buy.abi,
+        functionName: 'getLiquidRewards',
+        args: [address],
+      });
       if (!this.isNumbers(result)) return;
 
-      return new BigNumber(this.web3.utils.fromWei(result, 'ether'));
+      return new BigNumber(formatUnits(result, 18));
     } catch (error) {
       throw this.handleError('GET_REWARD_ERR', error);
     }
@@ -397,15 +419,19 @@ export class Polygon extends Blockchain {
    * @returns {Promise<bigint>} Promise allowed bigint for spender
    */
   public async getAllowance(
-    owner: string,
+    owner: HexString,
     isPOL = false,
-    spender = ADDRESS_CONTRACT_STAKING,
-  ): Promise<bigint | undefined> {
+    spender: HexString = ADDRESS_CONTRACT_STAKING,
+  ): Promise<bigint> {
     const contract = isPOL ? this.contract_approve_pol : this.contract_approve;
-    if (!contract.methods.allowance) return;
 
     try {
-      return await contract.methods.allowance(owner, spender).call();
+      return await this.client.readContract({
+        address: contract.address,
+        abi: contract.abi,
+        functionName: 'allowance',
+        args: [owner, spender],
+      });
     } catch (error) {
       throw this.handleError('GET_ALLOWANCE_ERR', error);
     }
@@ -415,53 +441,45 @@ export class Polygon extends Blockchain {
    * @param {string} address - user's address
    * @returns {Promise<BigNumber>} Promise with BigNumber of the delegation
    */
-  public async getTotalDelegate(
-    address: string,
-  ): Promise<BigNumber | undefined> {
+  public async getTotalDelegate(address: HexString): Promise<BigNumber> {
     try {
-      const methods = this.contract_buy.methods;
-      if (!methods.getTotalStake) return;
+      const [result] = await this.client.readContract({
+        address: this.contract_buy.address,
+        abi: this.contract_buy.abi,
+        functionName: 'getTotalStake',
+        args: [address],
+      });
 
-      const result = await methods.getTotalStake(address).call();
-      const res = result?.[0];
-      if (res == null) return;
-
-      return new BigNumber(this.web3.utils.fromWei(res, 'ether'));
+      return new BigNumber(formatUnits(result, 18));
     } catch (error) {
       throw this.handleError('GET_TOTAL_DELEGATE_ERR', error);
     }
   }
 
   /** getUnbond returns unbound data
-   * @param {string} address - user's address
+   * @param {HexString} address - user's address
    * @param {bigint} unbondNonce - unbound nonce
    * @returns {Promise<Object>} Promise Object with unbound data
    */
   public async getUnbond(
-    address: string,
+    address: HexString,
     unbondNonce = 0n,
   ): Promise<UnbondInfo | undefined> {
     try {
-      const methods = this.contract_buy.methods;
-      if (!methods.unbondNonces || !methods.unbonds_new) return;
-
-      const unbondNoncesRes: bigint = await methods
-        .unbondNonces(address)
-        .call();
+      const unbondNoncesRes = await this.getUnbondNonces(address);
 
       // Get recent nonces if not provided
       const unbondNonces = unbondNonce === 0n ? unbondNoncesRes : unbondNonce;
 
-      const result = await methods.unbonds_new(address, unbondNonces).call();
-
-      const res0 = result?.[0];
-      const res1 = result?.[1];
-
-      if (res0 == null || res1 == null || typeof unbondNonce !== 'bigint')
-        return;
+      const [res0, res1] = await this.client.readContract({
+        address: this.contract_buy.address,
+        abi: this.contract_buy.abi,
+        functionName: 'unbonds_new',
+        args: [address, unbondNonces],
+      });
 
       return {
-        amount: new BigNumber(this.web3.utils.fromWei(res0, 'ether')),
+        amount: new BigNumber(formatUnits(res0, 18)),
         withdrawEpoch: res1,
         unbondNonces,
       };
@@ -471,15 +489,17 @@ export class Polygon extends Blockchain {
   }
 
   /** getUnbondNonces returns unbound nonce
-   * @param {string} address - user's address
+   * @param {HexString} address - user's address
    * @returns {Promise<bigint>} Promise with unbound nonce bigint
    */
-  public async getUnbondNonces(address: string): Promise<bigint | undefined> {
+  public async getUnbondNonces(address: HexString): Promise<bigint> {
     try {
-      const methods = this.contract_buy.methods;
-      if (!methods.unbondNonces) return;
-
-      return await methods.unbondNonces(address).call();
+      return await this.client.readContract({
+        address: this.contract_buy.address,
+        abi: this.contract_buy.abi,
+        functionName: 'unbondNonces',
+        args: [address],
+      });
     } catch (error) {
       throw this.handleError('GET_UNBOND_NONCE_ERR', error);
     }
@@ -489,11 +509,11 @@ export class Polygon extends Blockchain {
    * @returns {Promise<bigint>} Promise with current epoch bigint
    */
   public async getCurrentEpoch(): Promise<bigint | undefined> {
-    const methods = this.contract_staking.methods;
-
-    if (!methods.currentEpoch) return;
-
-    return await methods.currentEpoch().call();
+    return this.client.readContract({
+      address: this.contract_staking.address,
+      abi: this.contract_staking.abi,
+      functionName: 'currentEpoch',
+    });
   }
 
   private isNumbers(value: unknown): value is Numbers {
@@ -502,5 +522,24 @@ export class Polygon extends Blockchain {
       typeof value === 'bigint' ||
       typeof value === 'string'
     );
+  }
+
+  private async getTransaction(
+    data: HexString,
+    address: HexString,
+    contractAddress: HexString,
+  ): Promise<TransactionRequest> {
+    const gasLimit = await this.client.estimateGas({
+      to: contractAddress,
+      data,
+      account: address,
+    });
+
+    return {
+      from: address,
+      to: contractAddress,
+      gasLimit,
+      data,
+    };
   }
 }

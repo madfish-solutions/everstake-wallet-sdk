@@ -18,8 +18,6 @@ import {
   unstakeSuccessFixture,
 } from '../__fixtures__';
 import { EthNetworkType } from '../types';
-import type { Contract } from 'web3';
-import { ABI_CONTRACT_POOL } from '../abi';
 
 describe('selectNetwork', () => {
   selectNetworkSuccessFixture.forEach(({ description, args, result }) => {
@@ -29,8 +27,8 @@ describe('selectNetwork', () => {
         args.network as EthNetworkType,
       );
 
-      expect(ethInstance.addressContractPool).toBe(result.addressContractPool);
-      expect(ethInstance.addressContractAccounting).toBe(
+      expect(ethInstance.contractPool.address).toBe(result.addressContractPool);
+      expect(ethInstance.contractAccounting.address).toBe(
         result.addressContractAccounting,
       );
       expect(ethInstance.addressContractWithdrawTreasury).toBe(
@@ -55,28 +53,20 @@ describe('unstakePending', () => {
       args,
       mockPendingBalance,
       mockMinStakeAmount,
-      mockContractPool,
+      mockEstimateGas,
       result,
     }) => {
       it(description, async () => {
-        const ethereum = new Ethereum(args.network as EthNetworkType);
+        const ethereum = new Ethereum(args.network);
         ethereum.pendingBalanceOf = jest
           .fn()
-          .mockResolvedValue(new BigNumber(mockPendingBalance as string));
+          .mockResolvedValue(new BigNumber(mockPendingBalance));
         ethereum.minStakeAmount = jest
           .fn()
-          .mockResolvedValue(new BigNumber(mockMinStakeAmount as string));
-
-        ethereum.contractPool = {
-          methods: {
-            unstakePending: jest.fn().mockReturnValue({
-              estimateGas: jest
-                .fn()
-                .mockResolvedValue(mockContractPool.estimateGas),
-              encodeABI: jest.fn().mockReturnValue(mockContractPool.encodeABI),
-            }),
-          },
-        } as unknown as Contract<typeof ABI_CONTRACT_POOL>;
+          .mockResolvedValue(new BigNumber(mockMinStakeAmount));
+        ethereum.client.estimateGas = jest
+          .fn()
+          .mockResolvedValue(mockEstimateGas);
 
         const transaction = await ethereum.unstakePending(
           args.address,
@@ -91,14 +81,14 @@ describe('unstakePending', () => {
   unstakePendingErrorFixture.forEach(
     ({ description, args, mockPendingBalance, mockMinStakeAmount, error }) => {
       it(description, async () => {
-        const ethereum = new Ethereum(args.network as EthNetworkType);
+        const ethereum = new Ethereum(args.network);
 
         ethereum.pendingBalanceOf = jest
           .fn()
-          .mockResolvedValue(new BigNumber(mockPendingBalance as string));
+          .mockResolvedValue(new BigNumber(mockPendingBalance ?? ''));
         ethereum.minStakeAmount = jest
           .fn()
-          .mockResolvedValue(new BigNumber(mockMinStakeAmount as string));
+          .mockResolvedValue(new BigNumber(mockMinStakeAmount ?? ''));
 
         await expect(
           ethereum.unstakePending(args.address, args.amount),

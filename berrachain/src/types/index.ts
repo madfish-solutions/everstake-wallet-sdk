@@ -3,7 +3,10 @@
  * Licensed under the BSD-3-Clause License. See LICENSE file for details.
  */
 
-import type { Contract } from 'web3';
+import BigNumber from 'bignumber.js';
+
+export type HexString = `0x${string}`;
+
 import { TESTNET_ABI } from '../bgt_testnet';
 import { MAINNET_ABI } from '../bgt_mainnet';
 
@@ -12,17 +15,19 @@ export type Network = 'testnet' | 'mainnet';
 export type BGTContract =
   | {
       network: 'testnet';
-      contract: Contract<typeof TESTNET_ABI>;
+      contractAddress: HexString;
+      abi: typeof TESTNET_ABI;
     }
   | {
       network: 'mainnet';
-      contract: Contract<typeof MAINNET_ABI>;
+      contractAddress: HexString;
+      abi: typeof MAINNET_ABI;
     };
 
 export type Transaction = {
   from: string;
   to: string;
-  value: number;
+  value: BigNumber;
   gasLimit: number;
   data: string;
 };

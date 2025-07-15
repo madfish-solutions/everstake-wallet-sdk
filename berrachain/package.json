@@ -1,6 +1,6 @@
 {
-  "name": "@everstake/wallet-sdk-berrachain",
-  "version": "0.1.2",
+  "name": "@temple-wallet/everstake-wallet-sdk-berrachain",
+  "version": "1.0.0",
   "description": "Berrachain - Everstake Wallet SDK",
   "publishConfig": {
     "access": "public"
@@ -16,12 +16,12 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "pnpm run prebuild && tsup src/index.ts --format cjs,esm --dts",
+    "build": "yarn run prebuild && tsup src/index.ts --format cjs,esm --dts",
     "type-check": "tsc",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "prettier": "prettier --write 'src/**/*.{ts,tsx}'",
     "test": "jest",
-    "prebuild": "pnpm run type-check && pnpm run lint"
+    "prebuild": "yarn run type-check && yarn run lint"
   },
   "keywords": [
     "berrachain",
@@ -41,7 +41,7 @@
   "homepage": "https://github.com/everstake/wallet-sdk#readme",
   "dependencies": {
     "bignumber.js": "^9.1.2",
-    "web3": "^4.14.0"
+    "viem": "^2.30.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.7.0",

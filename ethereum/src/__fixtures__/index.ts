@@ -3,6 +3,8 @@
  * Licensed under the BSD-3-Clause License. See LICENSE file for details.
  */
 
+import { BigNumber } from 'bignumber.js';
+
 export const selectNetworkSuccessFixture = [
   {
     description: 'should initialize "mainnet" network',
@@ -34,23 +36,20 @@ export const unstakePendingSuccessFixture = [
     args: {
       network: 'mainnet',
       address: '0x69E0951Ae0efA1Cb4a8d6702bf064C98Fc8E9A6a',
-      amount: 1,
+      amount: '1',
     },
     mockPendingBalance: '5',
     mockMinStakeAmount: '2',
-    mockContractPool: {
-      estimateGas: 1000,
-      encodeABI: 'MockedABI',
-    },
+    mockEstimateGas: BigInt(1000),
     result: {
       from: '0x69E0951Ae0efA1Cb4a8d6702bf064C98Fc8E9A6a',
-      value: 0,
+      value: new BigNumber(0),
       to: '0xD523794C879D9eC028960a231F866758e405bE34',
       gasLimit: 221000,
-      data: 'MockedABI',
+      data: '0xed0723d40000000000000000000000000000000000000000000000000de0b6b3a7640000',
     },
   },
-];
+] as const;
 
 export const unstakePendingErrorFixture = [
   {
@@ -59,8 +58,10 @@ export const unstakePendingErrorFixture = [
     args: {
       network: 'mainnet',
       address: 'invalid_address',
-      amount: 1,
+      amount: '1',
     },
+    mockPendingBalance: undefined,
+    mockMinStakeAmount: undefined,
     error: 'Invalid Ethereum address format',
   },
   {
@@ -69,9 +70,10 @@ export const unstakePendingErrorFixture = [
     args: {
       network: 'mainnet',
       address: '0x69E0951Ae0efA1Cb4a8d6702bf064C98Fc8E9A6a',
-      amount: 1,
+      amount: '1',
     },
     mockPendingBalance: '0',
+    mockMinStakeAmount: undefined,
     error: 'Zero pending balance',
   },
   {
@@ -80,9 +82,10 @@ export const unstakePendingErrorFixture = [
     args: {
       network: 'mainnet',
       address: '0x69E0951Ae0efA1Cb4a8d6702bf064C98Fc8E9A6a',
-      amount: 2, // greater than pending balance
+      amount: '2', // greater than pending balance
     },
     mockPendingBalance: '1',
+    mockMinStakeAmount: undefined,
     error: 'Amount greater than pending balance 1',
   },
   {
@@ -91,7 +94,7 @@ export const unstakePendingErrorFixture = [
     args: {
       network: 'mainnet',
       address: '0x69E0951Ae0efA1Cb4a8d6702bf064C98Fc8E9A6a',
-      amount: 1,
+      amount: '1',
     },
     mockPendingBalance: '3', // 3 - 1 less than min stake amount
     mockMinStakeAmount: '5',
@@ -103,13 +106,13 @@ export const unstakePendingErrorFixture = [
     args: {
       network: 'mainnet',
       address: '0x69E0951Ae0efA1Cb4a8d6702bf064C98Fc8E9A6a',
-      amount: 1,
+      amount: '1',
     },
     mockPendingBalance: undefined,
     mockMinStakeAmount: undefined,
     error: 'An error occurred while unstaking the pending amount',
   },
-];
+] as const;
 
 export const claimWithdrawRequestSuccessFixture = [
   {
@@ -242,7 +245,7 @@ export const unstakeSuccessFixture = [
       expectedTx: {
         from: '0x057f0F0ba2e2f818c6fD4CA4A235F068495B6654',
         to: '0xAFA848357154a6a624686b348303EF9a13F63264',
-        value: 0,
+        value: new BigNumber(0),
         data: '0x76ec871c000000000000000000000000000000000000000000000000000000174876e80000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', // replace with the encoded ABI of the unstake method
       },
     },

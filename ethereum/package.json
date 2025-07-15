@@ -1,6 +1,6 @@
 {
-  "name": "@everstake/wallet-sdk-ethereum",
-  "version": "1.0.3",
+  "name": "@temple-wallet/everstake-wallet-sdk-ethereum",
+  "version": "2.0.0",
   "description": "Ethereum - Everstake Wallet SDK",
   "publishConfig": {
     "access": "public"
@@ -16,12 +16,12 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "pnpm run prebuild && tsup src/index.ts --format cjs,esm --dts",
+    "build": "yarn run prebuild && tsup src/index.ts --format cjs,esm --dts",
     "type-check": "tsc",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "prettier": "prettier --write 'src/**/*.{ts,tsx}'",
     "test": "jest",
-    "prebuild": "pnpm run type-check && pnpm run lint && pnpm run test"
+    "prebuild": "yarn run type-check && yarn run lint && yarn run test"
   },
   "keywords": [
     "ethereum",
@@ -40,9 +40,8 @@
   },
   "homepage": "https://github.com/everstake/wallet-sdk#readme",
   "dependencies": {
-    "bignumber.js": "^9.3.0",
-    "ethereum-multicall": "^2.26.0",
-    "web3": "4.16.0"
+    "bignumber.js": "^9.1.2",
+    "viem": "^2.30.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.7.0",
