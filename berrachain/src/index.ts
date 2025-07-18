@@ -117,6 +117,39 @@ export class Berrachain extends Blockchain {
     }
   }
 
+  public async stakeAllowance(address: HexString): Promise<string> {
+    try {
+      const rawResult = await this.client.readContract({
+        address: this.btg.contractAddress,
+        abi: this.btg.abi,
+        functionName: 'allowance',
+        args: [address, this.btg.contractAddress],
+      });
+
+      return String(rawResult);
+    } catch (error) {
+      this.handleError('ALLOWANCE_ERROR', error);
+    }
+  }
+
+  public async approveForStake(
+    address: HexString,
+    amount: string,
+  ): Promise<Transaction> {
+    try {
+      return await this.getTransaction(
+        encodeFunctionData({
+          abi: this.btg.abi,
+          functionName: 'approve',
+          args: [this.btg.contractAddress, parseUnits(amount, 18)],
+        }),
+        address,
+      );
+    } catch (error) {
+      this.handleError('APPROVE_FOR_STAKE_ERROR', error);
+    }
+  }
+
   /**
    * Retrieves the boosted stake of the user by address
    *
