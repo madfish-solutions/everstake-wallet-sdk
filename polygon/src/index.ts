@@ -49,8 +49,6 @@ interface ContractProps<T extends Abi> {
   address: HexString;
 }
 
-type Numbers = number | bigint | string;
-
 /**
  * The `Polygon` class extends the `Blockchain` class and provides methods for interacting with the Polygon network.
  *
@@ -151,15 +149,7 @@ export class Polygon extends Blockchain {
     address: HexString,
     amount: string,
     isPOL = false,
-  ): Promise<
-    | {
-        from: string;
-        to: string | undefined;
-        gasLimit: bigint;
-        data: string;
-      }
-    | undefined
-  > {
+  ): Promise<TransactionRequest> {
     const amountWei = parseUnits(amount, 18);
 
     if (new BigNumber(amountWei).isLessThan(MIN_AMOUNT)) {
@@ -197,7 +187,7 @@ export class Polygon extends Blockchain {
     address: HexString,
     amount: string,
     isPOL = false,
-  ): Promise<TransactionRequest | undefined> {
+  ): Promise<TransactionRequest> {
     if (await CheckToken(token)) {
       const amountWei = parseUnits(amount, 18);
       if (new BigNumber(amountWei).isLessThan(MIN_AMOUNT))
@@ -255,7 +245,7 @@ export class Polygon extends Blockchain {
     address: HexString,
     amount: string,
     isPOL = false,
-  ): Promise<TransactionRequest | undefined> {
+  ): Promise<TransactionRequest> {
     if (await CheckToken(token)) {
       try {
         const amountWei = parseUnits(amount, 18);
@@ -309,14 +299,12 @@ export class Polygon extends Blockchain {
     address: HexString,
     unbondNonce = 0n,
     isPOL = false,
-  ): Promise<TransactionRequest | undefined> {
+  ): Promise<TransactionRequest> {
     const unbond = await this.getUnbond(address, unbondNonce);
-    if (unbond == null) return;
 
     if (BigNumber(unbond.amount).isZero()) throw new Error(`Nothing to claim`);
 
     const currentEpoch = await this.getCurrentEpoch();
-    if (currentEpoch == null) return;
 
     if (
       BigNumber(currentEpoch.toString()).isLessThan(
@@ -352,7 +340,7 @@ export class Polygon extends Blockchain {
   public async reward(
     address: string,
     isPOL = false,
-  ): Promise<TransactionRequest | undefined> {
+  ): Promise<TransactionRequest> {
     const data = encodeFunctionData({
       abi: this.contract_buy.abi,
       functionName: isPOL ? 'withdrawRewardsPOL' : 'withdrawRewards',
@@ -376,7 +364,7 @@ export class Polygon extends Blockchain {
   public async restake(
     address: string,
     isPOL = false,
-  ): Promise<TransactionRequest | undefined> {
+  ): Promise<TransactionRequest> {
     const data = encodeFunctionData({
       abi: this.contract_buy.abi,
       functionName: isPOL ? 'restakePOL' : 'restake',
@@ -396,7 +384,7 @@ export class Polygon extends Blockchain {
    * @param {HexString} address - user's address
    * @returns {Promise<BigNumber>} Promise with number of the reward
    */
-  public async getReward(address: HexString): Promise<BigNumber | undefined> {
+  public async getReward(address: HexString): Promise<BigNumber> {
     try {
       const result = await this.client.readContract({
         address: this.contract_buy.address,
@@ -404,7 +392,6 @@ export class Polygon extends Blockchain {
         functionName: 'getLiquidRewards',
         args: [address],
       });
-      if (!this.isNumbers(result)) return;
 
       return new BigNumber(formatUnits(result, 18));
     } catch (error) {
@@ -464,7 +451,7 @@ export class Polygon extends Blockchain {
   public async getUnbond(
     address: HexString,
     unbondNonce = 0n,
-  ): Promise<UnbondInfo | undefined> {
+  ): Promise<UnbondInfo> {
     try {
       const unbondNoncesRes = await this.getUnbondNonces(address);
 
@@ -508,20 +495,12 @@ export class Polygon extends Blockchain {
   /** getCurrentEpoch returns current epoch
    * @returns {Promise<bigint>} Promise with current epoch bigint
    */
-  public async getCurrentEpoch(): Promise<bigint | undefined> {
+  public async getCurrentEpoch(): Promise<bigint> {
     return this.client.readContract({
       address: this.contract_staking.address,
       abi: this.contract_staking.abi,
       functionName: 'currentEpoch',
     });
-  }
-
-  private isNumbers(value: unknown): value is Numbers {
-    return (
-      typeof value === 'number' ||
-      typeof value === 'bigint' ||
-      typeof value === 'string'
-    );
   }
 
   private async getTransaction(
