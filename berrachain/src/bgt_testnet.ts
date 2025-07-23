@@ -6,7 +6,7 @@
 export const TESTNET_ABI = [
   {
     inputs: [],
-    name: 'AlreadyInitialized',
+    name: 'CannotRecoverIncentiveToken',
     type: 'error',
   },
   {
@@ -16,12 +16,12 @@ export const TESTNET_ABI = [
   },
   {
     inputs: [],
-    name: 'BlockDoesNotExist',
+    name: 'CommissionChangeAlreadyQueued',
     type: 'error',
   },
   {
     inputs: [],
-    name: 'BlockNotInBuffer',
+    name: 'CommissionChangeDelayMoreThanMax',
     type: 'error',
   },
   {
@@ -41,7 +41,22 @@ export const TESTNET_ABI = [
   },
   {
     inputs: [],
-    name: 'DelegateStakedOverflow',
+    name: 'CommissionChangeDelayNotPassed',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'DepositNotMultipleOfGwei',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'DepositValueTooHigh',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'DonateAmountLessThanPayoutAmount',
     type: 'error',
   },
   {
@@ -196,12 +211,32 @@ export const TESTNET_ABI = [
   },
   {
     inputs: [],
+    name: 'IncentiveRateTooHigh',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'IndexOutOfRange',
+    type: 'error',
+  },
+  {
+    inputs: [],
     name: 'InsolventReward',
     type: 'error',
   },
   {
     inputs: [],
     name: 'InsufficientDelegateStake',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InsufficientDeposit',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InsufficientIncentiveTokens',
     type: 'error',
   },
   {
@@ -232,12 +267,42 @@ export const TESTNET_ABI = [
   },
   {
     inputs: [],
-    name: 'InvalidCommission',
+    name: 'InvalidActivateBoostDelay',
     type: 'error',
   },
   {
     inputs: [],
-    name: 'InvalidCuttingBoardWeights',
+    name: 'InvalidArray',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidBaseRate',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidBoostMultiplier',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidCommissionValue',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidCredentialsLength',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidDistribution',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidDropBoostDelay',
     type: 'error',
   },
   {
@@ -252,7 +317,47 @@ export const TESTNET_ABI = [
   },
   {
     inputs: [],
-    name: 'InvalidMinter',
+    name: 'InvalidMerkleRoot',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidMinBoostedRewardRate',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidProof',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidPubKeyLength',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidRewardAllocationWeights',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidRewardClaimDelay',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidRewardConvexity',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidRewardRate',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidSignatureLength',
     type: 'error',
   },
   {
@@ -262,22 +367,27 @@ export const TESTNET_ABI = [
   },
   {
     inputs: [],
+    name: 'InvalidateDefaultRewardAllocation',
+    type: 'error',
+  },
+  {
+    inputs: [],
     name: 'InvariantCheckFailed',
     type: 'error',
   },
   {
     inputs: [],
-    name: 'MaxNumWeightsPerCuttingBoardIsZero',
+    name: 'MaxNumWeightsPerRewardAllocationIsZero',
     type: 'error',
   },
   {
     inputs: [],
-    name: 'NoWhitelistedTokens',
+    name: 'MinIncentiveRateIsZero',
     type: 'error',
   },
   {
     inputs: [],
-    name: 'NotActionableBlock',
+    name: 'NotAContract',
     type: 'error',
   },
   {
@@ -312,6 +422,11 @@ export const TESTNET_ABI = [
   },
   {
     inputs: [],
+    name: 'NotEnoughBoostedBalance',
+    type: 'error',
+  },
+  {
+    inputs: [],
     name: 'NotEnoughTime',
     type: 'error',
   },
@@ -322,12 +437,12 @@ export const TESTNET_ABI = [
   },
   {
     inputs: [],
-    name: 'NotFriendOfTheChef',
+    name: 'NotFactoryVault',
     type: 'error',
   },
   {
     inputs: [],
-    name: 'NotGovernance',
+    name: 'NotIncentiveManager',
     type: 'error',
   },
   {
@@ -342,17 +457,17 @@ export const TESTNET_ABI = [
   },
   {
     inputs: [],
-    name: 'NotProver',
+    name: 'NotNewOperator',
     type: 'error',
   },
   {
     inputs: [],
-    name: 'NotRootFollower',
+    name: 'NotWhitelistedVault',
     type: 'error',
   },
   {
     inputs: [],
-    name: 'NotValidatorOrOperator',
+    name: 'OperatorAlreadySet',
     type: 'error',
   },
   {
@@ -384,22 +499,27 @@ export const TESTNET_ABI = [
   },
   {
     inputs: [],
-    name: 'PayoutTokenIsZero',
+    name: 'RewardAllocationAlreadyQueued',
     type: 'error',
   },
   {
     inputs: [],
-    name: 'QueuedCuttingBoardNotFound',
+    name: 'RewardAllocationBlockDelayTooLarge',
     type: 'error',
   },
   {
     inputs: [],
-    name: 'QueuedCuttingBoardNotReady',
+    name: 'RewardInactive',
     type: 'error',
   },
   {
     inputs: [],
     name: 'RewardCycleNotEnded',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'RewardsDurationIsZero',
     type: 'error',
   },
   {
@@ -425,6 +545,11 @@ export const TESTNET_ABI = [
   },
   {
     inputs: [],
+    name: 'TimestampAlreadyProcessed',
+    type: 'error',
+  },
+  {
+    inputs: [],
     name: 'TokenAlreadyWhitelistedOrLimitReached',
     type: 'error',
   },
@@ -444,19 +569,13 @@ export const TESTNET_ABI = [
     type: 'error',
   },
   {
-    inputs: [
-      {
-        internalType: 'address',
-        name: '',
-        type: 'address',
-      },
-    ],
-    name: 'Unauthorized',
+    inputs: [],
+    name: 'ZeroPercentageWeight',
     type: 'error',
   },
   {
     inputs: [],
-    name: 'VaultAlreadyExists',
+    name: 'ZeroOperatorOnFirstDeposit',
     type: 'error',
   },
   {
@@ -492,8 +611,14 @@ export const TESTNET_ABI = [
       {
         indexed: true,
         internalType: 'address',
-        name: 'validator',
+        name: 'user',
         type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
       },
       {
         indexed: false,
@@ -503,6 +628,19 @@ export const TESTNET_ABI = [
       },
     ],
     name: 'ActivateBoost',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: 'uint32',
+        name: 'newDelay',
+        type: 'uint32',
+      },
+    ],
+    name: 'ActivateBoostDelayChanged',
     type: 'event',
   },
   {
@@ -534,19 +672,13 @@ export const TESTNET_ABI = [
     anonymous: false,
     inputs: [
       {
-        indexed: true,
-        internalType: 'address',
-        name: 'previous',
-        type: 'address',
-      },
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'current',
-        type: 'address',
+        indexed: false,
+        internalType: 'string',
+        name: 'newTermsAndConditions',
+        type: 'string',
       },
     ],
-    name: 'BeraChefChanged',
+    name: 'BgtTermsAndConditionsChanged',
     type: 'event',
   },
   {
@@ -555,14 +687,39 @@ export const TESTNET_ABI = [
       {
         indexed: true,
         internalType: 'address',
-        name: 'sender',
+        name: 'user',
         type: 'address',
       },
       {
         indexed: true,
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
+      },
+      {
+        indexed: false,
+        internalType: 'uint128',
+        name: 'amount',
+        type: 'uint128',
+      },
+    ],
+    name: 'CancelDropBoost',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
         internalType: 'address',
-        name: 'validator',
+        name: 'user',
         type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
       },
       {
         indexed: false,
@@ -636,8 +793,14 @@ export const TESTNET_ABI = [
       {
         indexed: true,
         internalType: 'address',
-        name: 'validator',
+        name: 'user',
         type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
       },
       {
         indexed: false,
@@ -651,8 +814,40 @@ export const TESTNET_ABI = [
   },
   {
     anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: 'uint32',
+        name: 'newDelay',
+        type: 'uint32',
+      },
+    ],
+    name: 'DropBoostDelayChanged',
+    type: 'event',
+  },
+  {
+    anonymous: false,
     inputs: [],
     name: 'EIP712DomainChanged',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: 'address',
+        name: 'caller',
+        type: 'address',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'ExceedingReservesBurnt',
     type: 'event',
   },
   {
@@ -712,14 +907,39 @@ export const TESTNET_ABI = [
       {
         indexed: true,
         internalType: 'address',
-        name: 'sender',
+        name: 'user',
         type: 'address',
       },
       {
         indexed: true,
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
+      },
+      {
+        indexed: false,
+        internalType: 'uint128',
+        name: 'amount',
+        type: 'uint128',
+      },
+    ],
+    name: 'QueueDropBoost',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
         internalType: 'address',
-        name: 'validator',
+        name: 'user',
         type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
       },
       {
         indexed: false,
@@ -806,23 +1026,17 @@ export const TESTNET_ABI = [
       {
         indexed: true,
         internalType: 'address',
-        name: 'validator',
+        name: 'previous',
         type: 'address',
       },
       {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'oldRate',
-        type: 'uint256',
-      },
-      {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'newRate',
-        type: 'uint256',
+        indexed: true,
+        internalType: 'address',
+        name: 'current',
+        type: 'address',
       },
     ],
-    name: 'UpdateCommission',
+    name: 'StakerChanged',
     type: 'event',
   },
   {
@@ -842,13 +1056,37 @@ export const TESTNET_ABI = [
     inputs: [
       {
         internalType: 'address',
-        name: 'validator',
+        name: 'user',
         type: 'address',
+      },
+      {
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
       },
     ],
     name: 'activateBoost',
-    outputs: [],
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
     stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'activateBoostDelay',
+    outputs: [
+      {
+        internalType: 'uint32',
+        name: '',
+        type: 'uint32',
+      },
+    ],
+    stateMutability: 'view',
     type: 'function',
   },
   {
@@ -920,12 +1158,12 @@ export const TESTNET_ABI = [
   },
   {
     inputs: [],
-    name: 'beraChef',
+    name: 'bgtTermsAndConditions',
     outputs: [
       {
-        internalType: 'contract IBeraChef',
+        internalType: 'string',
         name: '',
-        type: 'address',
+        type: 'string',
       },
     ],
     stateMutability: 'view',
@@ -939,9 +1177,9 @@ export const TESTNET_ABI = [
         type: 'address',
       },
       {
-        internalType: 'address',
-        name: 'validator',
-        type: 'address',
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
       },
     ],
     name: 'boosted',
@@ -963,9 +1201,9 @@ export const TESTNET_ABI = [
         type: 'address',
       },
       {
-        internalType: 'address',
-        name: 'validator',
-        type: 'address',
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
       },
     ],
     name: 'boostedQueue',
@@ -987,33 +1225,9 @@ export const TESTNET_ABI = [
   {
     inputs: [
       {
-        internalType: 'address',
-        name: 'validator',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: 'rewardRate',
-        type: 'uint256',
-      },
-    ],
-    name: 'boostedRewardRate',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'validator',
-        type: 'address',
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
       },
     ],
     name: 'boostees',
@@ -1025,6 +1239,31 @@ export const TESTNET_ABI = [
       },
     ],
     stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'burnExceedingReserves',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
+      },
+      {
+        internalType: 'uint128',
+        name: 'amount',
+        type: 'uint128',
+      },
+    ],
+    name: 'cancelBoost',
+    outputs: [],
+    stateMutability: 'nonpayable',
     type: 'function',
   },
   {
@@ -1049,9 +1288,9 @@ export const TESTNET_ABI = [
   {
     inputs: [
       {
-        internalType: 'address',
-        name: 'validator',
-        type: 'address',
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
       },
       {
         internalType: 'uint128',
@@ -1059,7 +1298,7 @@ export const TESTNET_ABI = [
         type: 'uint128',
       },
     ],
-    name: 'cancelBoost',
+    name: 'cancelDropBoost',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
@@ -1108,54 +1347,6 @@ export const TESTNET_ABI = [
         internalType: 'uint48',
         name: '',
         type: 'uint48',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'validator',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: 'rewardRate',
-        type: 'uint256',
-      },
-    ],
-    name: 'commissionRewardRate',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'validator',
-        type: 'address',
-      },
-    ],
-    name: 'commissions',
-    outputs: [
-      {
-        internalType: 'uint32',
-        name: 'blockNumberLast',
-        type: 'uint32',
-      },
-      {
-        internalType: 'uint224',
-        name: 'rate',
-        type: 'uint224',
       },
     ],
     stateMutability: 'view',
@@ -1248,18 +1439,66 @@ export const TESTNET_ABI = [
     inputs: [
       {
         internalType: 'address',
-        name: 'validator',
+        name: 'user',
         type: 'address',
       },
       {
-        internalType: 'uint128',
-        name: 'amount',
-        type: 'uint128',
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
       },
     ],
     name: 'dropBoost',
-    outputs: [],
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
     stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'dropBoostDelay',
+    outputs: [
+      {
+        internalType: 'uint32',
+        name: '',
+        type: 'uint32',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'account',
+        type: 'address',
+      },
+      {
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
+      },
+    ],
+    name: 'dropBoostQueue',
+    outputs: [
+      {
+        internalType: 'uint32',
+        name: 'blockNumberLast',
+        type: 'uint32',
+      },
+      {
+        internalType: 'uint128',
+        name: 'balance',
+        type: 'uint128',
+      },
+    ],
+    stateMutability: 'view',
     type: 'function',
   },
   {
@@ -1371,7 +1610,7 @@ export const TESTNET_ABI = [
     inputs: [
       {
         internalType: 'address',
-        name: 'owner',
+        name: '_owner',
         type: 'address',
       },
     ],
@@ -1431,6 +1670,25 @@ export const TESTNET_ABI = [
     type: 'function',
   },
   {
+    inputs: [
+      {
+        internalType: 'bytes[]',
+        name: 'data',
+        type: 'bytes[]',
+      },
+    ],
+    name: 'multicall',
+    outputs: [
+      {
+        internalType: 'bytes[]',
+        name: '',
+        type: 'bytes[]',
+      },
+    ],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
     inputs: [],
     name: 'name',
     outputs: [
@@ -1452,6 +1710,25 @@ export const TESTNET_ABI = [
       },
     ],
     name: 'nonces',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
+      },
+    ],
+    name: 'normalizedBoost',
     outputs: [
       {
         internalType: 'uint256',
@@ -1497,9 +1774,9 @@ export const TESTNET_ABI = [
   {
     inputs: [
       {
-        internalType: 'address',
-        name: 'validator',
-        type: 'address',
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
       },
       {
         internalType: 'uint128',
@@ -1508,6 +1785,24 @@ export const TESTNET_ABI = [
       },
     ],
     name: 'queueBoost',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'bytes',
+        name: 'pubkey',
+        type: 'bytes',
+      },
+      {
+        internalType: 'uint128',
+        name: 'amount',
+        type: 'uint128',
+      },
+    ],
+    name: 'queueDropBoost',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
@@ -1559,12 +1854,12 @@ export const TESTNET_ABI = [
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_beraChef',
-        type: 'address',
+        internalType: 'uint32',
+        name: '_activateBoostDelay',
+        type: 'uint32',
       },
     ],
-    name: 'setBeraChef',
+    name: 'setActivateBoostDelay',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
@@ -1572,17 +1867,25 @@ export const TESTNET_ABI = [
   {
     inputs: [
       {
-        internalType: 'address',
-        name: 'validator',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: 'rate',
-        type: 'uint256',
+        internalType: 'string',
+        name: '_bgtTermsAndConditions',
+        type: 'string',
       },
     ],
-    name: 'setCommission',
+    name: 'setBgtTermsAndConditions',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint32',
+        name: '_dropBoostDelay',
+        type: 'uint32',
+      },
+    ],
+    name: 'setDropBoostDelay',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
@@ -1618,7 +1921,7 @@ export const TESTNET_ABI = [
     name: 'staker',
     outputs: [
       {
-        internalType: 'contract BGTStaker',
+        internalType: 'address',
         name: '',
         type: 'address',
       },

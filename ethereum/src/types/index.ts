@@ -21,11 +21,11 @@ export type EthNetworkAddressesMap = {
 };
 
 export type EthTransaction = {
-  from: string;
-  to: string;
+  from: HexString;
+  to: HexString;
   value: BigNumber;
   gasLimit: number;
-  data: string;
+  data: HexString;
 };
 
 export enum ValidatorStatus {

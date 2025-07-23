@@ -996,6 +996,7 @@ export class Ethereum extends Blockchain {
       to: contractAddress,
       data,
       account: address,
+      value: BigInt(value.toFixed()),
     });
 
     return {

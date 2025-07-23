@@ -1,6 +1,6 @@
 {
   "name": "@temple-wallet/everstake-wallet-sdk-polygon",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Polygon - Everstake Wallet SDK",
   "publishConfig": {
     "access": "public"

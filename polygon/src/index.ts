@@ -44,6 +44,13 @@ import {
 import BigNumber from 'bignumber.js';
 import { HexString, TransactionRequest, UnbondInfo } from './types';
 
+export {
+  WITHDRAW_EPOCH_DELAY as POLYGON_WITHDRAW_EPOCH_DELAY,
+  MIN_AMOUNT as POLYGON_MIN_AMOUNT,
+} from './constants';
+
+export { TransactionRequest as PolygonTransactionRequest } from './types';
+
 interface ContractProps<T extends Abi> {
   abi: T;
   address: HexString;
@@ -152,7 +159,7 @@ export class Polygon extends Blockchain {
   ): Promise<TransactionRequest> {
     const amountWei = parseUnits(amount, 18);
 
-    if (new BigNumber(amountWei).isLessThan(MIN_AMOUNT)) {
+    if (new BigNumber(amountWei).isLessThan(MIN_AMOUNT) && amountWei !== 0n) {
       throw new Error(
         `Min Amount ${formatUnits(BigInt(MIN_AMOUNT.toString()), 18)} matic`,
       );
@@ -208,14 +215,6 @@ export class Polygon extends Blockchain {
           args: [amountWei, 0n],
         });
 
-        // Create the transaction
-        const tx = {
-          from: address,
-          to: ADDRESS_CONTRACT_BUY,
-          gasLimit: DELEGATE_BASE_GAS,
-          data,
-        };
-
         await SetStats({
           token,
           action: 'stake',
@@ -225,7 +224,12 @@ export class Polygon extends Blockchain {
         });
         // Sign the transaction
 
-        return tx;
+        return await this.getTransaction(
+          data,
+          address,
+          ADDRESS_CONTRACT_BUY,
+          DELEGATE_BASE_GAS,
+        );
       } catch (error) {
         throw this.handleError('DELEGATE_ERR', error);
       }
@@ -264,14 +268,6 @@ export class Polygon extends Blockchain {
           args: [amountWei, amountWei],
         });
 
-        // Create the transaction
-        const tx = {
-          from: address,
-          to: ADDRESS_CONTRACT_BUY,
-          gasLimit: UNDELEGATE_BASE_GAS,
-          data,
-        };
-
         await SetStats({
           token,
           action: 'unstake',
@@ -280,7 +276,12 @@ export class Polygon extends Blockchain {
           chain: CHAIN,
         });
 
-        return tx;
+        return await this.getTransaction(
+          data,
+          address,
+          ADDRESS_CONTRACT_BUY,
+          UNDELEGATE_BASE_GAS,
+        );
       } catch (error) {
         throw this.handleError('UNDELEGATE_ERR', error);
       }
@@ -324,12 +325,12 @@ export class Polygon extends Blockchain {
       args: [unbond.unbondNonces],
     });
 
-    return {
-      from: address,
-      to: ADDRESS_CONTRACT_BUY,
-      gasLimit: CLAIM_UNDELEGATE_BASE_GAS,
+    return this.getTransaction(
       data,
-    };
+      address,
+      ADDRESS_CONTRACT_BUY,
+      CLAIM_UNDELEGATE_BASE_GAS,
+    );
   }
 
   /** reward makes unsigned claim reward TX
@@ -338,7 +339,7 @@ export class Polygon extends Blockchain {
    * @returns {Promise<Object>} Promise object represents the unsigned TX object
    */
   public async reward(
-    address: string,
+    address: HexString,
     isPOL = false,
   ): Promise<TransactionRequest> {
     const data = encodeFunctionData({
@@ -347,13 +348,12 @@ export class Polygon extends Blockchain {
       args: [],
     });
 
-    // Create the transaction
-    return {
-      from: address,
-      to: ADDRESS_CONTRACT_BUY,
-      gasLimit: CLAIM_REWARDS_BASE_GAS,
+    return this.getTransaction(
       data,
-    };
+      address,
+      ADDRESS_CONTRACT_BUY,
+      CLAIM_REWARDS_BASE_GAS,
+    );
   }
 
   /** restake makes unsigned restake reward TX
@@ -362,7 +362,7 @@ export class Polygon extends Blockchain {
    * @returns {Promise<Object>} Promise object represents the unsigned TX object
    */
   public async restake(
-    address: string,
+    address: HexString,
     isPOL = false,
   ): Promise<TransactionRequest> {
     const data = encodeFunctionData({
@@ -371,13 +371,12 @@ export class Polygon extends Blockchain {
       args: [],
     });
 
-    // Create the transaction
-    return {
-      from: address,
-      to: ADDRESS_CONTRACT_BUY,
-      gasLimit: RESTAKE_BASE_GAS,
+    return this.getTransaction(
       data,
-    };
+      address,
+      ADDRESS_CONTRACT_BUY,
+      RESTAKE_BASE_GAS,
+    );
   }
 
   /** getReward returns reward number
@@ -507,6 +506,7 @@ export class Polygon extends Blockchain {
     data: HexString,
     address: HexString,
     contractAddress: HexString,
+    baseGasLimit = 0n,
   ): Promise<TransactionRequest> {
     const gasLimit = await this.client.estimateGas({
       to: contractAddress,
@@ -517,7 +517,7 @@ export class Polygon extends Blockchain {
     return {
       from: address,
       to: contractAddress,
-      gasLimit,
+      gasLimit: baseGasLimit > gasLimit ? baseGasLimit : gasLimit,
       data,
     };
   }

@@ -34,6 +34,12 @@ import {
 
 import { ERROR_MESSAGES, ORIGINAL_ERROR_MESSAGES } from './constants/errors';
 
+export {
+  BoostedQueue,
+  Network,
+  Transaction as BerachainTransaction,
+} from './types';
+
 /**
  * The `Berrachain` class extends the `Blockchain` class and provides methods for interacting with the Berrachain network.
  *
@@ -117,39 +123,6 @@ export class Berrachain extends Blockchain {
     }
   }
 
-  public async stakeAllowance(address: HexString): Promise<string> {
-    try {
-      const rawResult = await this.client.readContract({
-        address: this.btg.contractAddress,
-        abi: this.btg.abi,
-        functionName: 'allowance',
-        args: [address, this.btg.contractAddress],
-      });
-
-      return String(rawResult);
-    } catch (error) {
-      this.handleError('ALLOWANCE_ERROR', error);
-    }
-  }
-
-  public async approveForStake(
-    address: HexString,
-    amount: string,
-  ): Promise<Transaction> {
-    try {
-      return await this.getTransaction(
-        encodeFunctionData({
-          abi: this.btg.abi,
-          functionName: 'approve',
-          args: [this.btg.contractAddress, parseUnits(amount, 18)],
-        }),
-        address,
-      );
-    } catch (error) {
-      this.handleError('APPROVE_FOR_STAKE_ERROR', error);
-    }
-  }
-
   /**
    * Retrieves the boosted stake of the user by address
    *
@@ -222,6 +195,44 @@ export class Berrachain extends Blockchain {
     }
   }
 
+  public async getUnstakeInQueue(address: HexString): Promise<BoostedQueue> {
+    try {
+      const result = await this.client.readContract({
+        address: this.btg.contractAddress,
+        abi: this.btg.abi,
+        functionName: 'dropBoostQueue',
+        args: [address, this.validator],
+      });
+
+      return {
+        lastBlock: result[0],
+        balance: result[1] ? result[1].toString() : '0',
+      };
+    } catch (error) {
+      this.handleError('DROP_BOOST_QUEUE_ERROR', error);
+    }
+  }
+
+  public async getActivateBoostDelay() {
+    try {
+      return await this.client.readContract({
+        address: this.btg.contractAddress,
+        abi: this.btg.abi,
+        functionName: 'activateBoostDelay',
+      });
+    } catch (error) {
+      this.handleError('ACTIVATE_BOOST_DELAY_ERROR', error);
+    }
+  }
+
+  public async getBlockNumber(): Promise<bigint> {
+    try {
+      return await this.client.getBlockNumber();
+    } catch (error) {
+      this.handleError('BLOCK_NUMBER_ERROR', error);
+    }
+  }
+
   /**
    * Creates a transaction data for boost activation
    *
@@ -232,25 +243,14 @@ export class Berrachain extends Blockchain {
    */
   public async activateStake(address: HexString): Promise<Transaction> {
     try {
-      let data: HexString;
-      switch (this.btg.network) {
-        case 'testnet':
-          data = encodeFunctionData({
-            abi: this.btg.abi,
-            functionName: 'activateBoost',
-            args: [this.validator],
-          });
-          break;
-        case 'mainnet':
-          data = encodeFunctionData({
-            abi: this.btg.abi,
-            functionName: 'activateBoost',
-            args: [address, this.validator],
-          });
-          break;
-      }
-
-      return await this.getTransaction(data, address);
+      return await this.getTransaction(
+        encodeFunctionData({
+          abi: this.btg.abi,
+          functionName: 'activateBoost',
+          args: [address, this.validator],
+        }),
+        address,
+      );
     } catch (error) {
       this.handleError('ACTIVATE_BOOST_ERROR', error);
     }
@@ -296,31 +296,20 @@ export class Berrachain extends Blockchain {
    *
    * @throws Will throw an error if the contract call fails.
    */
-  public async unstake(address: string, amount: string): Promise<Transaction> {
+  public async unstake(address: string): Promise<Transaction> {
     try {
       if (!isAddress(address)) {
         this.throwError('ADDRESS_FORMAT_ERROR');
       }
 
-      let data: HexString;
-      switch (this.btg.network) {
-        case 'testnet':
-          data = encodeFunctionData({
-            abi: this.btg.abi,
-            functionName: 'dropBoost',
-            args: [this.validator, parseUnits(amount, 18)],
-          });
-          break;
-        case 'mainnet':
-          data = encodeFunctionData({
-            abi: this.btg.abi,
-            functionName: 'dropBoost',
-            args: [address, this.validator],
-          });
-          break;
-      }
-
-      return await this.getTransaction(data, address);
+      return await this.getTransaction(
+        encodeFunctionData({
+          abi: this.btg.abi,
+          functionName: 'dropBoost',
+          args: [address, this.validator],
+        }),
+        address,
+      );
     } catch (error) {
       this.handleError('DROP_BOOST_ERROR', error);
     }
@@ -368,10 +357,6 @@ export class Berrachain extends Blockchain {
     amount: string,
   ): Promise<Transaction> {
     try {
-      if (this.network !== 'mainnet') {
-        this.throwError('NOT_AVAILABLE_NETWORK');
-      }
-
       return await this.getTransaction(
         encodeFunctionData({
           abi: this.btg.abi,
@@ -399,10 +384,6 @@ export class Berrachain extends Blockchain {
     amount: string,
   ): Promise<Transaction> {
     try {
-      if (this.network !== 'mainnet') {
-        this.throwError('NOT_AVAILABLE_NETWORK');
-      }
-
       return await this.getTransaction(
         encodeFunctionData({
           abi: this.btg.abi,

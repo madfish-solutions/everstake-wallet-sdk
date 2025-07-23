@@ -25,11 +25,11 @@ export type BGTContract =
     };
 
 export type Transaction = {
-  from: string;
-  to: string;
+  from: HexString;
+  to: HexString;
   value: BigNumber;
   gasLimit: number;
-  data: string;
+  data: HexString;
 };
 
 export type BoostedQueue = {

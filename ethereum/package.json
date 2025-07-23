@@ -1,6 +1,6 @@
 {
   "name": "@temple-wallet/everstake-wallet-sdk-ethereum",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Ethereum - Everstake Wallet SDK",
   "publishConfig": {
     "access": "public"
