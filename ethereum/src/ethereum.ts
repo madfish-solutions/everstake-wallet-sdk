@@ -64,9 +64,12 @@ export class Ethereum extends Blockchain {
   protected ERROR_MESSAGES = ERROR_MESSAGES;
   protected ORIGINAL_ERROR_MESSAGES = ORIGINAL_ERROR_MESSAGES;
 
-  constructor(network: EthNetworkType = 'mainnet', url?: string) {
+  constructor(
+    network: EthNetworkType = 'mainnet',
+    rpcOrTransport?: string | HttpTransport | FallbackTransport,
+  ) {
     super();
-    this.initializeNetwork(network, url);
+    this.initializeNetwork(network, rpcOrTransport);
   }
 
   /**
