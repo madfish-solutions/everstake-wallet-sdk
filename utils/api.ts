@@ -3,27 +3,44 @@
  * Licensed under the BSD-3-Clause License. See LICENSE file for details.
  */
 
-import { API_URL, ASSETS_API } from './constants';
+let apiUrl = '';
 
-async function CheckToken(token: string): Promise<boolean> {
-  try {
-    const response = await fetch(`${API_URL}/token/check/${token}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    return data.result;
-  } catch (error) {
-    console.error('Failed to check token:', error);
-    throw error;
-  }
+export function setApiUrl(url: string) {
+  apiUrl = url;
 }
+
+const makeApiFetchFn = <T, A extends unknown[]>(
+  fetchArgsFn: (...args: A) => [string | URL | Request, RequestInit?],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transformResponseData: (data: any) => T,
+  errorMessagePrefix: string,
+) => {
+  return async (...args: A): Promise<T> => {
+    try {
+      const response = await fetch(...fetchArgsFn(...args));
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      return transformResponseData(data);
+    } catch (error) {
+      console.error(`${errorMessagePrefix}:`, error);
+      throw error;
+    }
+  };
+};
+
+export const checkToken = makeApiFetchFn(
+  (token: string) => [
+    `${apiUrl}/everstake-wallet/token/check/${token}`,
+    { method: 'GET', headers: { 'Content-Type': 'application/json' } },
+  ],
+  (data: { result: boolean }) => data.result,
+  'Failed to check token',
+);
 
 interface SetStatsParams {
   token: string;
@@ -33,76 +50,52 @@ interface SetStatsParams {
   chain: string;
 }
 
-async function SetStats({
-  token,
-  action,
-  amount,
-  address,
-  chain,
-}: SetStatsParams): Promise<void> {
-  try {
-    const response = await fetch(`${API_URL}/stats/set`, {
+export const setStats = makeApiFetchFn(
+  ({ token, action, amount, address, chain }: SetStatsParams) => [
+    `${apiUrl}/everstake-wallet/stats/set`,
+    {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token,
-        action,
-        amount,
-        address,
-        chain,
-      }),
-    });
+      body: JSON.stringify({ token, action, amount, address, chain }),
+    },
+  ],
+  () => undefined,
+  'Failed to set stats',
+);
 
-    if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
-    }
-  } catch (error) {
-    console.error('Failed to set stats:', error);
-    throw error;
-  }
-}
-
-async function CreateToken(name: string, type: string) {
-  try {
-    const response = await fetch(`${API_URL}/token/create`, {
+export const createToken = makeApiFetchFn(
+  (name: string, type: string) => [
+    `${apiUrl}/everstake-wallet/token/create`,
+    {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, type }),
-    });
+    },
+  ],
+  (data) => data,
+  'Failed to create token',
+);
 
-    if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
-    }
+export const getAssets = makeApiFetchFn(
+  (chain: string) => [
+    `${apiUrl}/everstake-dashboard/chain?name=${chain.toLowerCase()}`,
+    { method: 'GET' },
+  ],
+  (data) => data,
+  'Failed to get assets',
+);
 
-    const data = await response.json();
-
-    return data;
-  } catch (error) {
-    console.error('Failed to create token:', error);
-    throw error;
-  }
-}
-
-async function GetAssets(chain: string) {
-  try {
-    const response = await fetch(
-      `${ASSETS_API}/chain?name=${chain.toLowerCase()}`,
-      {
-        method: 'GET',
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    return data;
-  } catch (error) {
-    console.error('Failed to get assets:', error);
-    throw error;
-  }
-}
-
-export { CheckToken, SetStats, CreateToken, GetAssets };
+export const getEthValidatorsQueueStats = makeApiFetchFn<
+  Record<
+    | 'validator_activation_time'
+    | 'validator_adding_delay'
+    | 'validator_exit_time'
+    | 'validator_withdraw_time',
+    number
+  >,
+  []
+>(
+  () => [`${apiUrl}/everstake-eth-api/validators/queue`, { method: 'GET' }],
+  (data) => data,
+  'Failed to get ETH validators queue stats',
+);

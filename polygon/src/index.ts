@@ -17,7 +17,7 @@ import {
 } from 'viem';
 
 import { Blockchain } from '../../utils';
-import { CheckToken, SetStats } from '../../utils/api';
+import { checkToken, setStats } from '../../utils/api';
 import { COMMON_ERROR_MESSAGES } from '../../utils/constants/errors';
 
 import { ERROR_MESSAGES, ORIGINAL_ERROR_MESSAGES } from './constants/errors';
@@ -50,6 +50,8 @@ export {
 } from './constants';
 
 export { TransactionRequest as PolygonTransactionRequest } from './types';
+
+export { createToken, setApiUrl } from '../../utils/api';
 
 interface ContractProps<T extends Abi> {
   abi: T;
@@ -195,7 +197,7 @@ export class Polygon extends Blockchain {
     amount: string,
     isPOL = false,
   ): Promise<TransactionRequest> {
-    if (await CheckToken(token)) {
+    if (await checkToken(token)) {
       const amountWei = parseUnits(amount, 18);
       if (new BigNumber(amountWei).isLessThan(MIN_AMOUNT))
         throw new Error(`Min Amount ${MIN_AMOUNT} wei matic`);
@@ -215,7 +217,7 @@ export class Polygon extends Blockchain {
           args: [amountWei, 0n],
         });
 
-        await SetStats({
+        await setStats({
           token,
           action: 'stake',
           amount: Number(amount),
@@ -250,7 +252,7 @@ export class Polygon extends Blockchain {
     amount: string,
     isPOL = false,
   ): Promise<TransactionRequest> {
-    if (await CheckToken(token)) {
+    if (await checkToken(token)) {
       try {
         const amountWei = parseUnits(amount, 18);
         const delegatedBalance = await this.getTotalDelegate(address);
@@ -268,7 +270,7 @@ export class Polygon extends Blockchain {
           args: [amountWei, amountWei],
         });
 
-        await SetStats({
+        await setStats({
           token,
           action: 'unstake',
           amount: Number(amount),
