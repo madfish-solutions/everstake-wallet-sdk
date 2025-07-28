@@ -203,7 +203,7 @@ export class Polygon extends Blockchain {
         throw new Error(`Min Amount ${MIN_AMOUNT} wei matic`);
 
       try {
-        const allowedAmount = await this.getAllowance(address);
+        const allowedAmount = await this.getAllowance(address, isPOL);
         if (
           allowedAmount &&
           new BigNumber(allowedAmount.toString()).isLessThan(amountWei)

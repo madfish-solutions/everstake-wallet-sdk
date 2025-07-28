@@ -1,6 +1,6 @@
 {
   "name": "@temple-wallet/everstake-wallet-sdk",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Everstake Wallet SDK for Javascript",
   "publishConfig": {
     "access": "public"
