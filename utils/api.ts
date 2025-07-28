@@ -23,12 +23,11 @@ const makeApiFetchFn = <T, A extends unknown[]>(
         throw new Error(`Error: ${response.statusText}`);
       }
 
+      const rawResponseBody = await response.text();
       try {
-        const data = await response.json();
-
-        return transformResponseData(data);
+        return transformResponseData(JSON.parse(rawResponseBody));
       } catch (e) {
-        return transformResponseData(await response.text());
+        return transformResponseData(rawResponseBody);
       }
     } catch (error) {
       console.error(`${errorMessagePrefix}:`, error);
