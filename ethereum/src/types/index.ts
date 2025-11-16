@@ -7,7 +7,7 @@ import BigNumber from 'bignumber.js';
 
 export type HexString = `0x${string}`;
 
-export type EthNetworkType = 'mainnet' | 'holesky';
+export type EthNetworkType = 'mainnet' | 'holesky' | 'hoodi';
 
 export interface EthNetworkAddresses {
   addressContractAccounting: HexString;
