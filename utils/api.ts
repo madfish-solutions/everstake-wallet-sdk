@@ -26,7 +26,7 @@ const makeApiFetchFn = <T, A extends unknown[]>(
       const rawResponseBody = await response.text();
       try {
         return transformResponseData(JSON.parse(rawResponseBody));
-      } catch (e) {
+      } catch {
         return transformResponseData(rawResponseBody);
       }
     } catch (error) {
