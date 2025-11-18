@@ -17,13 +17,13 @@ You can install and import Wallet SDK for Javascript/TypeScript.
 Install the npm library by copying the code below.
 
 ```sh
-$ npm install @everstake/wallet-sdk-ethereum
+$ npm install @temple-wallet/everstake-wallet-sdk-ethereum
 ```
 
 or you can also use yarn
 
 ```sh
-$ yarn add @everstake/wallet-sdk-ethereum
+$ yarn add @temple-wallet/everstake-wallet-sdk-ethereum
 ```
 
 ### Step. 2: Import Wallet SDK
@@ -34,14 +34,14 @@ After installing the package, you can import the Ethereum module and use the SDK
 
 ```ts
 // import module
-import { Ethereum } from '@everstake/wallet-sdk-ethereum';
+import { Ethereum } from '@temple-wallet/everstake-wallet-sdk-ethereum';
 // or you can also use
-import * as Ethereum from '@everstake/wallet-sdk-ethereum';
+import * as Ethereum from '@temple-wallet/everstake-wallet-sdk-ethereum';
 ```
 
 #### Import ES5
 
 ```ts
 // import module
-const { Ethereum } = require("@everstake/wallet-sdk-ethereum");
+const { Ethereum } = require("@temple-wallet/everstake-wallet-sdk-ethereum");
 ```

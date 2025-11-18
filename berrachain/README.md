@@ -21,19 +21,19 @@ You can install and import Wallet SDK for Javascript/TypeScript.
 Install the npm library by copying the code below.
 
 ```sh
-$ npm install @everstake/wallet-sdk-berrachain
+$ npm install @temple-wallet/everstake-wallet-sdk-berrachain
 ```
 
 or you can also use yarn
 
 ```sh
-$ yarn add @everstake/wallet-sdk-berrachain
+$ yarn add @temple-wallet/everstake-wallet-sdk-berrachain
 ```
 
 or you can use pnpm
 
 ```sh
-$ pnpm add @everstake/wallet-sdk-berrachain
+$ pnpm add @temple-wallet/everstake-wallet-sdk-berrachain
 ```
 
 ### Step. 2: Import Wallet SDK
@@ -44,14 +44,14 @@ After installing the app, you can import module Berrachain and use the SDK:
 
 ```ts
 // import modules
-import { Berrachain } from '@everstake/wallet-sdk-berrachain';
+import { Berrachain } from '@temple-wallet/everstake-wallet-sdk-berrachain';
 ```
 
 #### Import ES5
 
 ```ts
 // import modules
-const { Berrachain } = require('@everstake/wallet-sdk-berrachain');
+const { Berrachain } = require('@temple-wallet/everstake-wallet-sdk-berrachain');
 
 ```
 
