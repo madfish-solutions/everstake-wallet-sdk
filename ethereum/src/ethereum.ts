@@ -73,7 +73,11 @@ export class Ethereum extends Blockchain {
 
   constructor(
     network: EthNetworkType = 'mainnet',
-    rpcOrTransport?: string | HttpTransport | FallbackTransport,
+    rpcOrTransport?:
+      | string
+      | HttpTransport
+      | FallbackTransport
+      | MinPropsPublicClient,
   ) {
     super();
     this.initializeNetwork(network, rpcOrTransport);
