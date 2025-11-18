@@ -25,6 +25,7 @@ import { ValidatorStatus } from './types';
 import { Blockchain } from '../../utils';
 import {
   Abi,
+  Chain,
   createPublicClient,
   encodeFunctionData,
   FallbackTransport,
@@ -33,12 +34,18 @@ import {
   isAddress,
   parseUnits,
   PublicClient,
+  Transport,
 } from 'viem';
 
 interface ContractProps<T extends Abi> {
   abi: T;
   address: HexString;
 }
+
+type MinPropsPublicClient = PublicClient<
+  Transport,
+  Pick<Chain, 'id' | 'name' | 'nativeCurrency' | 'rpcUrls'>
+>;
 
 /**
  * The `Ethereum` class extends the `Blockchain` class and provides methods for interacting with the Ethereum network.
@@ -57,7 +64,7 @@ export class Ethereum extends Blockchain {
   public addressContractWithdrawTreasury!: string;
   public contractAccounting!: ContractProps<typeof ABI_CONTRACT_ACCOUNTING>;
   public contractPool!: ContractProps<typeof ABI_CONTRACT_POOL>;
-  public client!: PublicClient;
+  public client!: MinPropsPublicClient;
 
   private minAmount = new BigNumber(ETH_MIN_AMOUNT);
 
@@ -1023,7 +1030,11 @@ export class Ethereum extends Blockchain {
    */
   private initializeNetwork(
     network: EthNetworkType,
-    urlOrTransport?: string | HttpTransport | FallbackTransport,
+    clientOrUrlOrTransport?:
+      | string
+      | HttpTransport
+      | FallbackTransport
+      | MinPropsPublicClient,
   ): void {
     const networkAddresses = ETH_NETWORK_ADDRESSES[network];
 
@@ -1031,18 +1042,32 @@ export class Ethereum extends Blockchain {
       this.throwError('NETWORK_NOT_SUPPORTED', network);
     }
 
-    urlOrTransport = urlOrTransport || networkAddresses.rpcUrl;
-    this.client = createPublicClient({
-      transport:
-        typeof urlOrTransport === 'string'
-          ? http(urlOrTransport, {
-              /** Defaults to 3 */
-              retryCount: 1,
-              /** Defaults to 150 */
-              retryDelay: 300,
-            })
-          : urlOrTransport,
-    });
+    clientOrUrlOrTransport = clientOrUrlOrTransport || networkAddresses.rpcUrl;
+    const fallbackBatchOptions = {
+      multicall:
+        network === 'mainnet'
+          ? { batchSize: 160, wait: 25, maxSize: 10_240 }
+          : { batchSize: 64, wait: 20, maxSize: 4_096 },
+    };
+    if (typeof clientOrUrlOrTransport === 'string') {
+      this.client = createPublicClient({
+        transport: http(clientOrUrlOrTransport, {
+          /** Defaults to 3 */
+          retryCount: 1,
+          /** Defaults to 150 */
+          retryDelay: 300,
+        }),
+        batch: fallbackBatchOptions,
+      });
+    } else if ('transport' in clientOrUrlOrTransport) {
+      this.client = clientOrUrlOrTransport;
+    } else {
+      this.client = createPublicClient({
+        transport: clientOrUrlOrTransport,
+        batch: fallbackBatchOptions,
+      });
+    }
+
     const {
       addressContractAccounting,
       addressContractPool,
