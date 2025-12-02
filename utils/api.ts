@@ -102,3 +102,37 @@ export const getEthValidatorsQueueStats = makeApiFetchFn<
   (data) => data,
   'Failed to get ETH validators queue stats',
 );
+
+export type StakingTransactionType = 'stake' | 'unstake' | 'unstake_pending' | 'claim_withdraw_request' | 'activate_stake';
+
+export interface StakingTransaction {
+  sender: string;
+  block_num: number;
+  hash: string;
+  type: StakingTransactionType;
+  amount: string;
+  created_at: string;
+}
+
+export const getEthAccountTransactions = makeApiFetchFn<StakingTransaction[], [{
+  account: string;
+  operation?: StakingTransactionType;
+  limit?: number;
+  offset?: number;
+  before?: string;
+}]>(
+  ({ account, ...restParams }) => {
+    const url = new URL(`${apiUrl}/everstake-eth-api/transactions/${account}`);
+
+    for (const key in restParams) {
+      const typedKey = key as keyof typeof restParams;
+      if (restParams[typedKey] != null) {
+        url.searchParams.set(typedKey, restParams[typedKey].toString());
+      }
+    }
+
+    return [url, { method: 'GET' }];
+  },
+  (data) => data,
+  'Failed to get ETH account transactions',
+);

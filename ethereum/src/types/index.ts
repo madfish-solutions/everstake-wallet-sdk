@@ -4,6 +4,7 @@
  */
 
 import BigNumber from 'bignumber.js';
+import type { TransactionRequest } from 'viem';
 
 export type HexString = `0x${string}`;
 
@@ -20,13 +21,9 @@ export type EthNetworkAddressesMap = {
   [K in EthNetworkType]: EthNetworkAddresses;
 };
 
-export type EthTransaction = {
-  from: HexString;
-  to: HexString;
-  value: BigNumber;
-  gasLimit: number;
-  data: HexString;
-};
+export type EthTransaction = Required<
+  Pick<TransactionRequest, 'from' | 'to' | 'value' | 'gas' | 'data'>
+>;
 
 export enum ValidatorStatus {
   Unknown = 0,
@@ -36,4 +33,30 @@ export enum ValidatorStatus {
 
 export interface AggregatedBalances {
   [key: string]: string;
+}
+
+export interface ContractViewsStats {
+  pendingBalanceOf: BigNumber;
+  pendingDepositedBalanceOf: BigNumber;
+  pendingRestakedRewardOf: BigNumber;
+  autocompoundBalanceOf: BigNumber;
+  depositedBalanceOf: BigNumber;
+  restakedRewardOf: BigNumber;
+  withdrawRequest: {
+    requested: BigNumber;
+    readyForClaim: BigNumber;
+  };
+  balance: BigNumber;
+  pendingBalance: BigNumber;
+  pendingDepositedBalance: BigNumber;
+  pendingRestakedRewards: BigNumber;
+  readyforAutocompoundRewardsAmount: BigNumber;
+  withdrawRequestQueueParams: {
+    withdrawRequested: BigNumber;
+    interchangeAllowed: BigNumber;
+    filled: BigNumber;
+    claimed: BigNumber;
+  };
+  poolFee: BigNumber;
+  minStakeAmount: BigNumber;
 }

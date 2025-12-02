@@ -43,9 +43,9 @@ export const unstakePendingSuccessFixture = [
     mockEstimateGas: BigInt(1000),
     result: {
       from: '0x69E0951Ae0efA1Cb4a8d6702bf064C98Fc8E9A6a',
-      value: new BigNumber(0),
+      value: BigInt(0),
       to: '0xD523794C879D9eC028960a231F866758e405bE34',
-      gasLimit: 221000,
+      gas: BigInt(221000),
       data: '0xed0723d40000000000000000000000000000000000000000000000000de0b6b3a7640000',
     },
   },

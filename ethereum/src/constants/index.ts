@@ -30,7 +30,7 @@ export const ETH_NETWORK_ADDRESSES: EthNetworkAddressesMap = {
   },
 };
 
-export const ETH_GAS_RESERVE = new BigNumber(220000);
+export const ETH_GAS_RESERVE = BigInt(220000);
 
 export const UINT16_MAX = 65535 | 0; // asm type annotation
 

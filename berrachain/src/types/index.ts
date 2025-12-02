@@ -3,7 +3,7 @@
  * Licensed under the BSD-3-Clause License. See LICENSE file for details.
  */
 
-import BigNumber from 'bignumber.js';
+import type { TransactionRequest } from 'viem';
 
 export type HexString = `0x${string}`;
 
@@ -24,13 +24,9 @@ export type BGTContract =
       abi: typeof MAINNET_ABI;
     };
 
-export type Transaction = {
-  from: HexString;
-  to: HexString;
-  value: BigNumber;
-  gasLimit: number;
-  data: HexString;
-};
+export type Transaction = Required<
+  Pick<TransactionRequest, 'from' | 'to' | 'value' | 'gas' | 'data'>
+>;
 
 export type BoostedQueue = {
   lastBlock: number;

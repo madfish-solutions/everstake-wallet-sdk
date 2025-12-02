@@ -4,6 +4,7 @@
  */
 
 export const ERROR_MESSAGES = {
+  ALL_STATS_ERROR: 'An error occurred while getting the all stats',
   BALANCE_ERROR: 'An error occurred while getting the balance',
   PENDING_BALANCE_ERROR: 'An error occurred while getting the pending balance',
   PENDING_DEPOSITED_BALANCE_ERROR:

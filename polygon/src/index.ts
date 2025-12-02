@@ -42,14 +42,14 @@ import {
   WITHDRAW_EPOCH_DELAY,
 } from './constants';
 import BigNumber from 'bignumber.js';
-import { HexString, TransactionRequest, UnbondInfo } from './types';
+import { HexString, Transaction, UnbondInfo } from './types';
 
 export {
   WITHDRAW_EPOCH_DELAY as POLYGON_WITHDRAW_EPOCH_DELAY,
   MIN_AMOUNT as POLYGON_MIN_AMOUNT,
 } from './constants';
 
-export { TransactionRequest as PolygonTransactionRequest } from './types';
+export { Transaction as PolygonTransactionRequest } from './types';
 
 export { createToken, setApiUrl } from '../../utils/api';
 
@@ -158,7 +158,7 @@ export class Polygon extends Blockchain {
     address: HexString,
     amount: string,
     isPOL = false,
-  ): Promise<TransactionRequest> {
+  ): Promise<Transaction> {
     const amountWei = parseUnits(amount, 18);
 
     if (new BigNumber(amountWei).isLessThan(MIN_AMOUNT) && amountWei !== 0n) {
@@ -196,7 +196,7 @@ export class Polygon extends Blockchain {
     address: HexString,
     amount: string,
     isPOL = false,
-  ): Promise<TransactionRequest> {
+  ): Promise<Transaction> {
     if (await checkToken(token)) {
       const amountWei = parseUnits(amount, 18);
       if (new BigNumber(amountWei).isLessThan(MIN_AMOUNT))
@@ -251,7 +251,7 @@ export class Polygon extends Blockchain {
     address: HexString,
     amount: string,
     isPOL = false,
-  ): Promise<TransactionRequest> {
+  ): Promise<Transaction> {
     if (await checkToken(token)) {
       try {
         const amountWei = parseUnits(amount, 18);
@@ -302,7 +302,7 @@ export class Polygon extends Blockchain {
     address: HexString,
     unbondNonce = 0n,
     isPOL = false,
-  ): Promise<TransactionRequest> {
+  ): Promise<Transaction> {
     const unbond = await this.getUnbond(address, unbondNonce);
 
     if (BigNumber(unbond.amount).isZero()) throw new Error(`Nothing to claim`);
@@ -340,10 +340,7 @@ export class Polygon extends Blockchain {
    * @param {boolean} isPOL - is POL token (false - old MATIC)
    * @returns {Promise<Object>} Promise object represents the unsigned TX object
    */
-  public async reward(
-    address: HexString,
-    isPOL = false,
-  ): Promise<TransactionRequest> {
+  public async reward(address: HexString, isPOL = false): Promise<Transaction> {
     const data = encodeFunctionData({
       abi: this.contract_buy.abi,
       functionName: isPOL ? 'withdrawRewardsPOL' : 'withdrawRewards',
@@ -366,7 +363,7 @@ export class Polygon extends Blockchain {
   public async restake(
     address: HexString,
     isPOL = false,
-  ): Promise<TransactionRequest> {
+  ): Promise<Transaction> {
     const data = encodeFunctionData({
       abi: this.contract_buy.abi,
       functionName: isPOL ? 'restakePOL' : 'restake',
@@ -509,7 +506,7 @@ export class Polygon extends Blockchain {
     address: HexString,
     contractAddress: HexString,
     baseGasLimit = 0n,
-  ): Promise<TransactionRequest> {
+  ): Promise<Transaction> {
     const gasLimit = await this.client.estimateGas({
       to: contractAddress,
       data,
@@ -519,7 +516,7 @@ export class Polygon extends Blockchain {
     return {
       from: address,
       to: contractAddress,
-      gasLimit: baseGasLimit > gasLimit ? baseGasLimit : gasLimit,
+      gas: baseGasLimit > gasLimit ? baseGasLimit : gasLimit,
       data,
     };
   }

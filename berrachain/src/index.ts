@@ -411,8 +411,8 @@ export class Berrachain extends Blockchain {
     return {
       from: address,
       to: this.btg.contractAddress,
-      value,
-      gasLimit: this.calculateGasLimit(gasConsumption),
+      value: BigInt(value.toFixed()),
+      gas: this.calculateGasLimit(gasConsumption),
       data,
     };
   }
@@ -422,9 +422,9 @@ export class Berrachain extends Blockchain {
    *
    * @param gasConsumption - The amount of gas consumed.
    *
-   * @returns The calculated gas limit as a number.
+   * @returns The calculated gas limit as bigint.
    */
-  private calculateGasLimit(gasConsumption: bigint): number {
-    return Number(gasConsumption) + GAS_RESERVE;
+  private calculateGasLimit(gasConsumption: bigint) {
+    return gasConsumption + GAS_RESERVE;
   }
 }

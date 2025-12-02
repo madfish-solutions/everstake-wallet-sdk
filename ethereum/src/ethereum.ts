@@ -20,6 +20,7 @@ import type {
   EthTransaction,
   AggregatedBalances,
   HexString,
+  ContractViewsStats,
 } from './types';
 import { ValidatorStatus } from './types';
 import { Blockchain } from '../../utils';
@@ -568,6 +569,125 @@ export class Ethereum extends Blockchain {
     }
   }
 
+  public async contractViewsStats(
+    address: string,
+  ): Promise<ContractViewsStats> {
+    const accountMethods = [
+      'pendingBalanceOf',
+      'pendingDepositedBalanceOf',
+      'pendingRestakedRewardOf',
+      'autocompoundBalanceOf',
+      'depositedBalanceOf',
+      'restakedRewardOf',
+      'withdrawRequest',
+    ] as const;
+    const otherAccountingMethods = [
+      'balance',
+      'pendingBalance',
+      'pendingDepositedBalance',
+      'pendingRestakedRewards',
+      'readyforAutocompoundRewardsAmount',
+      'withdrawRequestQueueParams',
+      'getPoolFee',
+    ] as const;
+    try {
+      const multicallContracts = [
+        ...accountMethods.map((functionName) => ({
+          functionName,
+          address: this.contractAccounting.address,
+          abi: this.contractAccounting.abi,
+          args: [address],
+        })),
+        ...otherAccountingMethods.map((functionName) => ({
+          functionName,
+          address: this.contractAccounting.address,
+          abi: this.contractAccounting.abi,
+        })),
+        {
+          functionName: 'minStakeAmount',
+          address: this.contractPool.address,
+          abi: this.contractPool.abi,
+        },
+      ] as const;
+
+      const [
+        pendingBalanceOf,
+        pendingDepositedBalanceOf,
+        pendingRestakedRewardOf,
+        autocompoundBalanceOf,
+        depositedBalanceOf,
+        restakedRewardOf,
+        withdrawRequest,
+        balance,
+        pendingBalance,
+        pendingDepositedBalance,
+        pendingRestakedRewards,
+        readyforAutocompoundRewardsAmount,
+        withdrawRequestQueueParams,
+        poolFee,
+        minStakeAmount,
+      ] = await this.client.multicall({
+        contracts: multicallContracts,
+        allowFailure: false,
+        multicallAddress: MULTICALL_CONTRACT_ADDRESS,
+      });
+
+      const weiValues = {
+        pendingBalanceOf,
+        pendingDepositedBalanceOf,
+        pendingRestakedRewardOf,
+        autocompoundBalanceOf,
+        depositedBalanceOf,
+        restakedRewardOf,
+        balance,
+        pendingBalance,
+        pendingDepositedBalance,
+        pendingRestakedRewards,
+        readyforAutocompoundRewardsAmount,
+        minStakeAmount,
+      } as Record<
+        Exclude<
+          keyof ContractViewsStats,
+          'withdrawRequestQueueParams' | 'withdrawRequest' | 'poolFee'
+        >,
+        bigint
+      >;
+      const typedWithdrawRequest = withdrawRequest as [bigint, bigint];
+      const typedWithdrawRequestQueueParams = withdrawRequestQueueParams as [
+        bigint,
+        bigint,
+        bigint,
+        bigint,
+      ];
+
+      return {
+        ...Object.fromEntries(
+          Object.entries(weiValues).map(([key, value]) => [
+            key,
+            this.fromWeiToEther(value),
+          ]),
+        ),
+        poolFee: new BigNumber(poolFee?.toString() ?? 0).div(10000),
+        withdrawRequest: {
+          requested: this.fromWeiToEther(typedWithdrawRequest[0]),
+          readyForClaim: this.fromWeiToEther(typedWithdrawRequest[1]),
+        },
+        withdrawRequestQueueParams: {
+          withdrawRequested: this.fromWeiToEther(
+            typedWithdrawRequestQueueParams[0],
+          ),
+          interchangeAllowed: this.fromWeiToEther(
+            typedWithdrawRequestQueueParams[1],
+          ),
+          filled: this.fromWeiToEther(typedWithdrawRequestQueueParams[2]),
+          claimed: this.fromWeiToEther(typedWithdrawRequestQueueParams[3]),
+        },
+      } as unknown as ContractViewsStats;
+    } catch (error) {
+      this.handleError('ALL_STATS_ERROR', error);
+    }
+  }
+
   /**
    * Claims funds requested by withdraw.
    *
@@ -1016,8 +1136,8 @@ export class Ethereum extends Blockchain {
     return {
       from: address,
       to: contractAddress,
-      value,
-      gasLimit: this.calculateGasLimit(gasConsumption),
+      value: BigInt(value.toFixed()),
+      gas: this.calculateGasLimit(gasConsumption),
       data,
     };
   }
@@ -1117,11 +1237,9 @@ export class Ethereum extends Blockchain {
    *
    * @param gasConsumption - The amount of gas consumed.
    *
-   * @returns The calculated gas limit as a number.
+   * @returns The calculated gas limit as bigint.
    */
-  private calculateGasLimit(gasConsumption: bigint): number {
-    return new BigNumber(gasConsumption.toString())
-      .plus(ETH_GAS_RESERVE)
-      .toNumber();
+  private calculateGasLimit(gasConsumption: bigint) {
+    return gasConsumption + ETH_GAS_RESERVE;
   }
 }

@@ -12,4 +12,4 @@ export const MAINNET_VALIDATOR =
 export const MAINNET_BGT_CONTRACT_ADDRESS =
   '0x656b95E550C07a9ffe548bd4085c72418Ceb1dba';
 
-export const GAS_RESERVE = 220000;
+export const GAS_RESERVE = BigInt(220000);
